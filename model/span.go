@@ -67,6 +67,15 @@ func (s *Span) NormalizeTimestamps() {
 	}
 }
 
+
+// rowywang, GetSpanTagByKey, return value of tagKey, and whether the tag can be found
+func (s *Span) GetSpanTagByKey(tagKey string) (tagVal string, found bool) {
+	if tag, ok := KeyValues(s.Tags).FindByKey(tagKey); ok {
+		return tag.AsString(), true
+	}
+	return "", false
+}
+
 // ParentSpanID returns ID of a parent span if it exists.
 // It searches for the first child-of reference pointing to the same trace ID.
 func (s *Span) ParentSpanID() SpanID {
