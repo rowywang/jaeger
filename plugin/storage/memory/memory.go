@@ -57,6 +57,44 @@ func WithConfiguration(configuration config.Configuration) *Store {
 	}
 }
 
+//// GetDependencies returns dependencies between services
+//func (m *Store) GetDependencies(endTs time.Time, lookback time.Duration) ([]model.DependencyLink, error) {
+//	// deduper used below can modify the spans, so we take an exclusive lock
+//	m.Lock()
+//	defer m.Unlock()
+//	deps := map[string]*model.DependencyLink{}
+//	startTs := endTs.Add(-1 * lookback)
+//	for _, orig := range m.traces {
+//		// SpanIDDeduper never returns an err
+//		trace, _ := m.deduper.Adjust(orig)
+//		if m.traceIsBetweenStartAndEnd(startTs, endTs, trace) {
+//			for _, s := range trace.Spans {
+//				parentSpan := m.findSpan(trace, s.ParentSpanID())
+//				if parentSpan != nil {
+//					if parentSpan.Process.ServiceName == s.Process.ServiceName {
+//						continue
+//					}
+//					depKey := parentSpan.Process.ServiceName + "&&&" + s.Process.ServiceName
+//					if _, ok := deps[depKey]; !ok {
+//						deps[depKey] = &model.DependencyLink{
+//							Parent:    parentSpan.Process.ServiceName,
+//							Child:     s.Process.ServiceName,
+//							CallCount: 1,
+//						}
+//					} else {
+//						deps[depKey].CallCount++
+//					}
+//				}
+//			}
+//		}
+//	}
+//	retMe := make([]model.DependencyLink, 0, len(deps))
+//	for _, dep := range deps {
+//		retMe = append(retMe, *dep)
+//	}
+//	return retMe, nil
+//}
+
 // GetDependencies returns dependencies between services
 func (m *Store) GetDependencies(endTs time.Time, lookback time.Duration) ([]model.DependencyLink, error) {
 	// deduper used below can modify the spans, so we take an exclusive lock
@@ -69,21 +107,28 @@ func (m *Store) GetDependencies(endTs time.Time, lookback time.Duration) ([]mode
 		trace, _ := m.deduper.Adjust(orig)
 		if m.traceIsBetweenStartAndEnd(startTs, endTs, trace) {
 			for _, s := range trace.Spans {
-				parentSpan := m.findSpan(trace, s.ParentSpanID())
-				if parentSpan != nil {
-					if parentSpan.Process.ServiceName == s.Process.ServiceName {
-						continue
+				routeKey, ok := s.GetSpanTagByKey("route-key")
+				if !ok || routeKey != "807470437" {
+					continue
+				}
+				// get the callee service
+				child, ok := s.GetSpanTagByKey("peer.service")
+				if !ok || child == "unknown" || child == "" {
+					child, _ = s.GetSpanTagByKey("peer.ipv4")
+				}
+				if child == "" {
+					child = "unknown"
+				}
+
+				depKey := s.Process.ServiceName + "&&&" + child
+				if _, ok := deps[depKey]; !ok {
+					deps[depKey] = &model.DependencyLink{
+						Parent:    s.Process.ServiceName,
+						Child:     child,
+						CallCount: 1,
 					}
-					depKey := parentSpan.Process.ServiceName + "&&&" + s.Process.ServiceName
-					if _, ok := deps[depKey]; !ok {
-						deps[depKey] = &model.DependencyLink{
-							Parent:    parentSpan.Process.ServiceName,
-							Child:     s.Process.ServiceName,
-							CallCount: 1,
-						}
-					} else {
-						deps[depKey].CallCount++
-					}
+				} else {
+					deps[depKey].CallCount++
 				}
 			}
 		}

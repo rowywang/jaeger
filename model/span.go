@@ -61,6 +61,14 @@ func (s *Span) GetSpanKind() (spanKind string, found bool) {
 	return "", false
 }
 
+// rowywang, GetSpanTagByKey, return value of tagKey, and whether the tag can be found
+func (s *Span) GetSpanTagByKey(tagKey string) (tagVal string, found bool) {
+	if tag, ok := KeyValues(s.Tags).FindByKey(tagKey); ok {
+		return tag.AsString(), true
+	}
+	return "", false
+}
+
 // GetSamplerType returns the sampler type for span
 func (s *Span) GetSamplerType() string {
 	// There's no corresponding opentracing-go tag label corresponding to sampler.type
