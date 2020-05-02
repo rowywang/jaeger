@@ -20,8 +20,8 @@ jobs:
       id: go
 
     - name: Check out code into the Go module directory
-      run: git clone -b v1.17.1 --recursive https://github.com/jaegertracing/jaeger.git
+      run: git clone -b v1.17.1 https://github.com/jaegertracing/jaeger.git; cd jaeger; git submodule update --init --recursive; 
 
       
     - name: Build
-      run: cd /home/runner/work/jaeger/jaeger/jaeger/; make build-query
+      run: cd /home/runner/work/jaeger/jaeger/jaeger/; make install-tools; make build-query
