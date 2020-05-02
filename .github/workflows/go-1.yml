@@ -19,6 +19,9 @@ jobs:
         go-version: ^1.13
       id: go
 
+    - name: initial
+      run: apt-get install esc
+
     - name: Check out code into the Go module directory
       run: git clone --recursive https://github.com/jaegertracing/jaeger.git
 
@@ -29,6 +32,6 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
-
+      
     - name: Build
-      run: cd /home/runner/work/jaeger/jaeger/jaeger/; apt-get install esc; make build-query
+      run: cd /home/runner/work/jaeger/jaeger/jaeger/; make build-query
