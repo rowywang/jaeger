@@ -20,7 +20,7 @@ jobs:
       id: go
 
     - name: initial
-      run: apt-get install esc
+      run: sudo apt-get install esc
 
     - name: Check out code into the Go module directory
       run: git clone --recursive https://github.com/jaegertracing/jaeger.git
