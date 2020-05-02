@@ -31,4 +31,4 @@ jobs:
         fi
 
     - name: Build
-      run: apt-get install esc; cd /home/runner/work/jaeger/jaeger/jaeger/; make build-query
+      run: cd /home/runner/work/jaeger/jaeger/jaeger/; apt-get install esc; make build-query
