@@ -19,11 +19,8 @@ jobs:
         go-version: ^1.13
       id: go
 
-    - name: initial
-      run: sudo apt-get install esc
-
     - name: Check out code into the Go module directory
-      run: git clone --recursive https://github.com/jaegertracing/jaeger.git
+      run: git clone -b v1.17.1 --recursive https://github.com/jaegertracing/jaeger.git
 
     - name: Get dependencies
       run: |
